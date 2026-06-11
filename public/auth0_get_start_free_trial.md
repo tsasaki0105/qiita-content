@@ -5,7 +5,7 @@ tags:
   - 初学者向け
   - idaas
 private: false
-updated_at: '2026-06-11T18:40:54+09:00'
+updated_at: '2026-06-11T18:51:33+09:00'
 id: 978a0b65e96a170184ae
 organization_url_name: null
 slide: false
