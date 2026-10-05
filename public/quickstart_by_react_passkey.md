@@ -19,7 +19,7 @@ agreed_posting_campaign_term: false
 
 前回、[Auth0公式Quickstartで学ぶ！ReactのSPAに認証機能を組み込んでみた](https://qiita.com/tsasaki0105/items/50787a005dce9ec5b4ef)という記事で、Reactアプリに「ログイン」「ログアウト」「ユーザー情報表示」を組み込みました。
 
-今回はその続きとして、**「ログイン強化編」全2回**の1回目、**Passkey（パスキー）** を使ったログインを追加してみます。2回目では[MFA（多要素認証）](https://qiita.com/tsasaki0105/items/xxxxxxxxxxxxxxxxxxxx)を追加する予定です。
+今回はその続きとして、**「ログイン強化編」全2回**の1回目、**Passkey（パスキー）** を使ったログインを追加してみます。2回目では[MFA（多要素認証）](https://qiita.com/tsasaki0105/items/2eb7680dd1f5be8ebc34)を追加する予定です。
 
 Passkeyは、パスワードの代わりにデバイスの生体認証（指紋・顔認証）やPINでログインできる仕組みです。フィッシングに強く、パスワードを覚える・管理する必要がなくなるのが最大のメリットです。
 
