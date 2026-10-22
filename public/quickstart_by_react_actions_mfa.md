@@ -24,7 +24,7 @@ ignorePublish: false
 * **Passkeyでログインした場合** → MFAをスキップ
 * **ID/パスワードでログインした場合** → MFAを要求
 
-という条件分岐を実装します。これは認証後に実行されるAction（Post-Loginトリガー）の中で、「どの認証方法でログインしたか」というコンテキストを使って認可（＝MFAを要求するかどうか）を動的に決める、という意味で一種の**API認可**的な制御とも言えます。Auth0公式でも[「Reduce friction with passkeys」](https://auth0.com/docs/customize/actions/explore-triggers/post-login#reduce-friction-with-passkeys)というユースケースとして紹介されているパターンです。
+という条件分岐を実装します。これは認証後に実行されるAction（Post-Loginトリガー）の中で、「どの認証方法でログインしたか」というコンテキストを使って、MFAを要求するかどうかを動的に決める仕組みです。Auth0公式でも[「Reduce friction with passkeys」](https://auth0.com/docs/customize/actions/explore-triggers/post-login#reduce-friction-with-passkeys)というユースケースとして紹介されているパターンです。
 
 ※こちらの手順は2026年10月時点のものとなります。
 
@@ -36,17 +36,17 @@ ignorePublish: false
 * Passkeyが有効化されたAuth0のデータベース接続（[前々回の記事](https://qiita.com/tsasaki0105/items/c690767603a413e4d45f)参照）
 * MFA（TOTPなど）が有効化されたAuth0テナント（[前回の記事](https://qiita.com/tsasaki0105/items/2eb7680dd1f5be8ebc34)参照）
 
-今回はダッシュボードの設定だけでなく、初めて**Actions**（JavaScriptコード）を書きます。
+今回はダッシュボードの設定だけでなく、初めて**Actions**（Node.jsのコード）を書きます。
 
 ---
 
-# 1. 「Customize MFA Factors using Actions」を有効化する
+# 1. 「ActionsでMFA要素をカスタマイズする」を有効化する
 
-Actionsから `api.multifactor.enable` / `api.multifactor.enable("none")` を呼び出してMFAの要求を制御するには、まずこの機能をダッシュボード側で有効にしておく必要があります。
+Actionsから `api.multifactor.enable("none")` などを呼び出してMFAの要求を制御するには、まずこの機能をダッシュボード側で有効にしておく必要があります。
 
 1. Auth0ダッシュボードの左メニューから **「セキュリティ」→「多要素認証」** を選択します。
   ![多要素認証](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/4409088/d1e2fbd0-2824-47d5-a3a2-188acc7886b3.png)
-　
+
 2. 画面下部の **「追加設定」** を開き、**「ActionsでMFA要素をカスタマイズする」** のトグルを **ON** にします。
   ![追加設定](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/4409088/5e20f48f-c280-4d44-b62b-38543ec0c198.png)
 
@@ -81,7 +81,7 @@ Actionsから `api.multifactor.enable` / `api.multifactor.enable("none")` を呼
      }
 
      // ID/パスワードなど他の方法でログインした場合は何もしない
-     // → テナントに設定済みの「常時MFA」ポリシーがそのまま適用される
+     // → テナントに設定済みの「常時」ポリシーがそのまま適用される
    };
    ```
 
@@ -136,7 +136,11 @@ npm run dev
 
 # 4. （応用編）APIのスコープに応じてMFAを要求する
 
-今回は「ログイン方法」を条件にMFAを出し分けましたが、Actionsの `event` オブジェクトからは他にも様々な認可コンテキストを参照できます。例えば、認可リクエストで要求されたスコープ（`event.transaction.requested_scopes`）を見て、機密性の高い操作に対応するスコープが要求された場合だけMFAを要求する、という組み方も可能です。
+今回は「ログイン方法」を条件にMFAを出し分けましたが、Actionsの `event` オブジェクトからは他にも様々なコンテキスト情報を参照できます。例えば、認可リクエストで要求されたスコープ（`event.transaction.requested_scopes`）を見て、機密性の高い操作に対応するスコープが要求された場合だけMFAを要求する、という組み方も可能です。
+
+:::note warn
+この例は、テナントのMFAポリシーが **「検証しない」** であることが前提です。前回設定した **「常時」** のままだと、すべてのログインでMFAが要求されるため、スコープによる絞り込みになりません。試す場合は、**「セキュリティ」→「多要素認証」→「ポリシーを定義する」** でポリシーを「検証しない」に変更してください。なお、MFAが未登録のユーザーには、この例でもMFAの登録画面が表示されます。
+:::
 
 ```javascript
 exports.onExecutePostLogin = async (event, api) => {
@@ -150,7 +154,7 @@ exports.onExecutePostLogin = async (event, api) => {
 };
 ```
 
-これは「`transfer:funds`（送金）のスコープを要求しているクライアントからのログインにだけMFAを要求する」という[例](https://auth0.com/docs/secure/multi-factor-authentication/step-up-authentication/configure-step-up-authentication-for-apis)で、Auth0公式のステップアップ認証ドキュメントでも紹介されているパターンです。ログイン方法だけでなく、「どのAPI・どのスコープにアクセスしようとしているか」という**API認可**の情報もMFAの出し分けの条件に使えることがわかります。
+これは「`transfer:funds`（送金）のスコープを要求しているクライアントからのログインにだけMFAを要求する」という[例](https://auth0.com/docs/secure/multi-factor-authentication/step-up-authentication/configure-step-up-authentication-for-apis)で、Auth0公式のステップアップ認証ドキュメントでも紹介されているパターンです。ログイン方法だけでなく、「どのAPI・どのスコープにアクセスしようとしているか」という情報もMFAの出し分けの条件に使えることがわかります。
 
 ---
 
@@ -161,8 +165,8 @@ Auth0 Actionsを使って、ログイン方法に応じてMFAの要求を動的�
 * `event.authentication.methods` から、ログインに使われた認証方法（Passkey / ID/パスワードなど）を判定できる
 * `api.multifactor.enable("none")` を呼べば、特定の条件下でMFAをスキップできる
 * 逆に `api.multifactor.enable("any", ...)` のように呼べば、特定の条件下でMFAを追加で要求することもできる
-* 条件には認証方法だけでなく、`event.transaction.requested_scopes` などAPI認可に関する情報も使える
-* これらはダッシュボードの「Customize MFA Factors using Actions」を有効化した上で、Reactアプリ側のコードを変更せずに実現できる
+* 条件には認証方法だけでなく、`event.transaction.requested_scopes`（要求されたスコープ）なども使える
+* これらはダッシュボードの「ActionsでMFA要素をカスタマイズする」を有効化した上で、Reactアプリ側のコードを変更せずに実現できる
 
 Passkeyのようなフィッシング耐性の高い認証方式を「もう一つの要素」とみなしてMFAをスキップする一方、相対的に弱いID/パスワード認証や、機密性の高い操作にはMFAを要求する。Actionsを使うことで、セキュリティとユーザー体験のバランスを、ユースケースに応じて柔軟に調整できることが確認できました。
 
