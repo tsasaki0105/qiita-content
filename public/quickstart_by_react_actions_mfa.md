@@ -7,11 +7,13 @@ tags:
   - MFA
   - idaas
 private: false
-updated_at: ''
-id: null
+updated_at: '2026-10-22T15:29:06+09:00'
+id: 0f365c3523712b3c34fe
 organization_url_name: null
 slide: false
 ignorePublish: false
+posting_campaign_uuid: null
+agreed_posting_campaign_term: false
 ---
 # はじめに
 
