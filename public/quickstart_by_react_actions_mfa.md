@@ -1,5 +1,5 @@
 ---
-title: 【Auth0で学ぶ認証強化】Auth0 ActionsでMFAを出し分ける（Passkeyならノーパス、ID/パスワードならMFA要求）
+title: 【Auth0で学ぶ認証強化】Auth0 ActionsでMFAを出し分ける（PasskeyならMFAスキップ、ID/パスワードならMFA要求）
 tags:
   - 認証
   - Auth0
@@ -21,7 +21,7 @@ ignorePublish: false
 
 そこで今回は、**Auth0 Actions** を使って、ログイン方法に応じてMFAの要求を出し分けてみます。具体的には、
 
-* **Passkeyでログインした場合** → MFAをスキップ（ノーパス）
+* **Passkeyでログインした場合** → MFAをスキップ
 * **ID/パスワードでログインした場合** → MFAを要求
 
 という条件分岐を実装します。これは認証後に実行されるAction（Post-Loginトリガー）の中で、「どの認証方法でログインしたか」というコンテキストを使って認可（＝MFAを要求するかどうか）を動的に決める、という意味で一種の**API認可**的な制御とも言えます。Auth0公式でも[「Reduce friction with passkeys」](https://auth0.com/docs/customize/actions/explore-triggers/post-login#reduce-friction-with-passkeys)というユースケースとして紹介されているパターンです。
